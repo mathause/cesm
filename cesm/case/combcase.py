@@ -50,6 +50,12 @@ class combcase(object):
         self._hist = None
         self._proj = None
 
+    def __call__(self, suff, comp=None, hist=None):
+        if comp is None:
+            return self[suff](comp=comp, hist=hist)
+        # else:
+        #     return self[suff](comp, hist)
+
     def __getitem__(self, key):
         return getattr(self, key)
 

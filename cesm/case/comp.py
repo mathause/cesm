@@ -7,6 +7,7 @@
 import numpy as np
 import os
 import re
+import warnings
 
 from .hist import _hist
 
@@ -35,8 +36,6 @@ class _comp(object):
 
 
         self.__parse_hist_files__()
-
-        # self._atm_data = _data_atm(getattr(self, 'h0', None))
 
         self.__atm_data = None
         self.__lnd_data = None
@@ -69,10 +68,25 @@ class _comp(object):
 
         return self.__lnd_data
 
+    def __call__(self, hist):
+        self[hist]
 
+
+    def __getitem__(self, key):
+
+        if isinstance(key, int):
+            key = 'h' + str(key)
+            return getattr(self, key)
+
+        return getattr(self, key)
 
     def __getattr__(self, key):
         """Error msg for history file requests"""
+
+        # check if '0' or '1'
+        if key.isdigit():
+            key = 'h' + key
+            return getattr(self, key)
 
         if key.startswith('h'):
             msg = "No history files found for '{}'".format(key)
@@ -110,18 +124,22 @@ class _comp(object):
     def __get_re_string__(self):
         """ get regular expression string"""
 
-        re_str = re.compile(r'^' +                   # beginning of word
-                            self.casedef['name'] +   # name of run
+        re_str = re.compile(r'^' +                  # beginning of word
+                            self.casedef['name'] +  # name of run
                             '.' +
-                            self._modname +          # name of module
+                            self._modname +         # name of module
                             '.' +
-                            'h(?P<hist>\d).'         # number of hist file
-                            '(?P<year>\d{4})-'       # year
-                            '(?P<month>\d{2})'       # month
-                            '(.nc$'                  # end
-                            '|-'                     # -- OR --
-                            '(?P<day>\d{2})-'        # day
-                            '(?P<second>\d{5}).nc$)' # second
+                            '(?P<hist>.*).'         # hist file name
+                            '(?P<year>\d{4})-'      #  year
+                            '(?P<month>\d{2})'      #  month
+                            '(.nc'                  #  end
+                            '|-'                    #  -- OR --
+                            '(?P<day>\d{2})'        #   day
+                            '(.nc'                  #   end
+                            '|-'                    #   -- OR --
+                            '(?P<second>\d{5})'     #   second
+                            '.nc))'                 #   end
+                            '(?P<zip>.*)'
                             )
 
         return re_str
@@ -143,6 +161,7 @@ class _comp(object):
         filename, fullname, hist = [], [], []
         year, month, day, second = [], [], [], []
 
+        is_zipped = ''
         for h in hfiles:
 
             # find files that match
@@ -152,20 +171,24 @@ class _comp(object):
 
                 filename.append(h)
                 fullname.append(os.path.join(self.folder_hist, h))
-                hist += [reg.group('hist')]
+                hist += [reg.group('hist').replace('.', '_')]
                 year += [reg.group('year')]
                 month += [reg.group('month')]
 
                 # replace None
                 day += [reg.group('day') if reg.group('day') else '1']
                 second += [reg.group('second') if reg.group('second') else '0']
+                
+                if not is_zipped:
+                    is_zipped = reg.group('zip')
 
             else:
                 pass
 
+
         filename = np.array(filename)
         fullname = np.array(fullname)
-        hist = np.array(hist, dtype=np.int)
+        hist = np.array(hist, dtype=np.str)
         year = np.array(year, dtype=np.int)
         month = np.array(month, dtype=np.int)
         day = np.array(day, dtype=np.int)
@@ -179,17 +202,26 @@ class _comp(object):
             from .hist import _hist
             hist_class = _hist(h, filename[sel], fullname[sel],
                                year[sel], month[sel], day[sel], second[sel],
-                               self.folder_post, self._case)
+                               self.folder_post, self._case, self._modname)
 
-            setattr(self, 'h' + str(h), hist_class)
+            setattr(self, str(h), hist_class)
 
 
         if len(fullname):
             self.has_histfiles = True
 
+        if is_zipped:
+            msg = '{} is probably zipped (file ending: {})'.format(
+                self.comp, is_zipped)
+            warnings.warn(msg)
+
+
     def sel(self, hist, year=None, month=None, day=None, second=None, last=True):
 
-        hist = getattr(self, 'h' + str(hist))
+        # if isinstance(hist, int):
+        #     hist = 'h' + str(hist)
+
+        hist = getattr(self, hist)
         return hist.sel(year, month, day, second, last)
 
 # -----------------------------------------------------------------------------
@@ -221,6 +253,17 @@ class _ice(_comp):
 
     def __init__(self, case, modname):
         super(_ice, self).__init__(case, modname, 'ice')
+
+# -----------------------------------------------------------------------------
+
+class _ocn(_comp):
+
+    """docstring for _ocn"""
+
+    def __init__(self, case, modname):
+        super(_ocn, self).__init__(case, modname, 'ocn')
+
+
 # # sorted(glob.glob(case.case['folder'] + case.case['name'] + '/*/hist/*'))
 
 

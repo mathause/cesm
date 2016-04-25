@@ -14,7 +14,7 @@ import yaml
 import glob
 import weakref
 
-from .comp import _lnd, _atm, _ice
+from .comp import _lnd, _atm, _ice, _ocn
 
 
 def print_casenames(cesm_cases_path='~/cesm_cases.yaml'):
@@ -97,7 +97,7 @@ class case(object):
         self._atm = None
         self._lnd = None
         self._ice = None
-
+        self._ocn = None
         # add DATA
         # print self.atm
         # if self.atm is not None:
@@ -117,6 +117,20 @@ class case(object):
         #         getattr(self.lnd, 'h' + str(h))._atm_data = self._atm_data
         #     getattr(self.lnd, 'h' + str(h))._lnd_data = self._lnd_data
 
+    def __call__(self, comp, hist=None):
+
+        components = ['atm', 'lnd', 'ocn', 'ice']
+        if comp not in components:
+            cp = "'{0}'".format("', '".join(components))
+            msg = "comp ('{}') must be any of: {}".format(comp, cp)
+            raise KeyError(msg)
+
+        comp = getattr(self, comp)
+
+        if hist is None:
+            return comp
+
+        return comp[hist]
 
     def __repr__(self):
         msg = "CESM Case: {}\nfolder_hist: {}\nfolder_post: {}"
@@ -141,6 +155,13 @@ class case(object):
         if self._ice is None:
             self._ice = _ice(self, 'cice')
         return self._ice  
+
+    @property
+    def ocn(self):
+        if self._ocn is None:
+            self._ocn = _ocn(self, 'pop')
+        return self._ocn  
+
 
 # =============================================================================
 

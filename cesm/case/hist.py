@@ -7,12 +7,14 @@
 import numpy as np
 import warnings
 
+from .post import post_cls
+
 class _hist(object):
 
     """subset history streams"""
 
     def __init__(self, hist, filename, fullname, year, month, day, second,
-                 folder_post, case):
+                 folder_post, case, modname):
 
         super(_hist, self).__init__()
 
@@ -27,6 +29,8 @@ class _hist(object):
         self.folder_post = folder_post
         self._case = case
         self.casedef = case.casedef
+        self._modname = modname
+        self.post = post_cls(folder_post, case.casedef, hist, modname)
 
         # stop infinite recursion
         self.__lnd_data = None
