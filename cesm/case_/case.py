@@ -132,11 +132,16 @@ class case(object):
 
         return comp[hist]
 
+    def __getitem__(self, key):
+        return self(comp=key)
+
     def __repr__(self):
         msg = "CESM Case: {}\nfolder_hist: {}\nfolder_post: {}"
         msg = msg.format(self.case_name, self.casedef['folder_hist'], self.casedef['folder_post'])
         return msg
 
+    # -------------------------------------------------------------------------
+    # only parse the files if a component is accessed
 
     @property
     def atm(self):
@@ -162,7 +167,6 @@ class case(object):
             self._ocn = _ocn(self, 'pop')
         return self._ocn  
 
-
 # =============================================================================
 
 
@@ -173,11 +177,27 @@ def __read_yaml__(path):
         ==========
         path : string
             Full name of the yaml file. May contain '~', expanded to home.
+            Alternatively path may be a yaml string (for testing).
     """
 
-    path = os.path.expanduser(path)
-    with open(path, 'r') as stream:
-        return yaml.load(stream)
+    # expand '~' to '/home/$USER'
+    expanded_path = os.path.expanduser(path)
+
+    try:
+        # normal: read a file
+        with open(expanded_path, 'r') as stream:
+            return yaml.load(stream)
+    except IOError, exception:
+        # if a valid yaml string is passed
+        yaml_parsed = yaml.load(path)
+
+    if isinstance(yaml_parsed, dict):
+        return yaml_parsed
+    else:
+        # raise the path-not-found exception
+        raise exception
+
+# -----------------------------------------------------------------------------
 
 
 def __parse_yaml__(case_name, ens, cesm_cases_path):
@@ -192,7 +212,7 @@ def __parse_yaml__(case_name, ens, cesm_cases_path):
     casedef = casedefs.get(case_name, None)
 
     if casedef is None:
-        print_casenames()
+        print_casenames(cesm_cases_path)
         msg = ("'{}' is not known. See above.".format(case_name))
         raise KeyError(msg)
 
@@ -218,6 +238,8 @@ def __parse_yaml__(case_name, ens, cesm_cases_path):
 
     return casedef
 
+# -----------------------------------------------------------------------------
+
 
 def __create_folder_name__(casedef, suffix):
     """get folder path"""
@@ -228,18 +250,16 @@ def __create_folder_name__(casedef, suffix):
 
     # construct path
     if folder:
+        if '{name}' not in folder:
+            msg = "'{name}' must be part of folder_post or folder_hist."
+            raise RuntimeError(msg)
+
         path = folder.format(name=case_name)
     else:
         folder = casedef['folder']
         path = os.path.join(folder, case_name)
 
     return path
-
-
-
-
-
-
 
 # =============================================================================
 

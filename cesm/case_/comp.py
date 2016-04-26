@@ -69,7 +69,7 @@ class _comp(object):
         return self.__lnd_data
 
     def __call__(self, hist):
-        self[hist]
+        return self[hist]
 
 
     def __getitem__(self, key):
@@ -139,7 +139,7 @@ class _comp(object):
                             '|-'                    #   -- OR --
                             '(?P<second>\d{5})'     #   second
                             '.nc))'                 #   end
-                            '(?P<zip>.*)'
+                            '(?P<zip>.*)'           # is it zipped?
                             )
 
         return re_str
@@ -194,16 +194,20 @@ class _comp(object):
         day = np.array(day, dtype=np.int)
         second = np.array(second, dtype=np.int)
 
-        # available history streams
+        # determine available history streams
         self._hist_unique = np.unique(hist).tolist()
 
+        from .hist import _hist
+        # add history stream as attribute
         for h in self._hist_unique:
+            # all files that are from this given hist stream
             sel = hist == h
-            from .hist import _hist
+            # create individual hist class
             hist_class = _hist(h, filename[sel], fullname[sel],
                                year[sel], month[sel], day[sel], second[sel],
                                self.folder_post, self._case, self._modname)
 
+            # add it as an attribute
             setattr(self, str(h), hist_class)
 
 
