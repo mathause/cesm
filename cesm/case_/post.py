@@ -22,7 +22,7 @@ class post_cls(object):
 
     def pre_suf(self, prefix='', suffix='', file_type='nc'):
         """
-        Create filename by attaching pre- audn suffix to std name
+        Create filename by attaching pre- and suffix to std name
         """
 
         sep = '.'
@@ -52,4 +52,12 @@ class post_cls(object):
         return path.join(self.folder_post, file)
 
 
+    def full(self, name, file_type='nc'):
+        """
+        Create filename
+        """
+        sep = '.'
         
+        file = sep.join([name, file_type])
+        
+        return path.join(self.folder_post, file)
