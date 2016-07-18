@@ -187,7 +187,7 @@ def __read_yaml__(path):
         # normal: read a file
         with open(expanded_path, 'r') as stream:
             return yaml.load(stream)
-    except IOError, exception:
+    except IOError as exception:
         # if a valid yaml string is passed
         yaml_parsed = yaml.load(path)
 

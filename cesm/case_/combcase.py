@@ -4,7 +4,7 @@
 #Author: Mathias Hauser
 #Date: 
 
-from case import case
+from .case import case
 
 class combcase(object):
     """combining two associated CESM cases
