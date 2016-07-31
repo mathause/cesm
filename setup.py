@@ -1,4 +1,4 @@
-from setuptools import setup
+from setuptools import setup, find_packages
 
 setup(name='cesm',
       version='0.1.0',
@@ -7,7 +7,7 @@ setup(name='cesm',
       author='Mathias Hauser',
       author_email='mathias.hauser@env.ethz.ch',
       license='MIT',
-      packages=['cesm'],
+      packages=find_packages(),
       install_requires=['numpy',
                         'PyYaml'],
       test_suite='nose.collector',
