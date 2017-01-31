@@ -12,6 +12,7 @@ import warnings
 from .hist import _hist
 
 from .data import _data_atm, _data_lnd
+from .post import post_cls
 
 class _comp(object):
 
@@ -40,6 +41,8 @@ class _comp(object):
         self.__atm_data = None
         self.__lnd_data = None
 
+        self.post = post_cls(self.folder_post, case.casedef, 'no_hist',
+                              modname, add_hist=False)
 
     def __repr__(self):
         msg = "'{}' component of the CESM Case '{}'"
@@ -205,7 +208,8 @@ class _comp(object):
             # create individual hist class
             hist_class = _hist(h, filename[sel], fullname[sel],
                                year[sel], month[sel], day[sel], second[sel],
-                               self.folder_post, self._case, self._modname)
+                               self.folder_post, self._case, self._modname,
+                               self.comp)
 
             # add it as an attribute
             setattr(self, str(h), hist_class)
@@ -239,6 +243,15 @@ class _lnd(_comp):
     def __init__(self, case, modname):
         super(_lnd, self).__init__(case, modname, 'lnd')
 
+        self._data = None
+
+    @property
+    def data(self):
+        if self._data is None:
+            self._data = self._lnd_data
+
+        return self._data
+
 # -----------------------------------------------------------------------------
 
 
@@ -248,6 +261,13 @@ class _atm(_comp):
 
     def __init__(self, case, modname):
         super(_atm, self).__init__(case, modname, 'atm')
+
+    @property
+    def data(self):
+        if self._data is None:
+            self._data = self._atm_data
+
+        return self._data
 
 # -----------------------------------------------------------------------------
 

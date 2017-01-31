@@ -9,12 +9,34 @@ import warnings
 
 from .post import post_cls
 
+
+# CODE SAMPLE -> SUBCLASS str TO add 'folder_post' to every string
+
+# class file(str):
+#     ''' Provides an object that is like a string
+#     but with additional attributes
+#     '''
+
+#     def __new__(cls, value, folder_post=''):
+#         ''' Return a string instance
+#         '''
+#         return str.__new__(cls, value)
+
+#     def __init__(self, value, folder_post=''):
+#         ''' Add some attributes to the instance
+#         '''
+#         self.folder_post = str(folder_post)
+
+
+
+
+
 class _hist(object):
 
     """subset history streams"""
 
     def __init__(self, hist, filename, fullname, year, month, day, second,
-                 folder_post, case, modname):
+                 folder_post, case, modname, comp):
 
         super(_hist, self).__init__()
 
@@ -30,11 +52,26 @@ class _hist(object):
         self._case = case
         self.casedef = case.casedef
         self._modname = modname
+        self.comp = comp
         self.post = post_cls(folder_post, case.casedef, hist, modname)
 
         # stop infinite recursion
         self.__lnd_data = None
         self.__atm_data = None
+
+        self._data = None
+
+    @property
+    def data(self):
+        if self._data is None:
+            if self.comp == 'lnd':
+                self._data = self._lnd_data
+            elif self.comp == 'atm':
+                self._data = self._atm_data
+            else:
+                self._data = None
+
+        return self._data
 
     @property
     def _lnd_data(self):

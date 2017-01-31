@@ -90,11 +90,18 @@ class _data_lnd(_data):
 
 
 class _data_atm(_data):
-
     """docstring for _data_land"""
-
     def __init__(self, h0):
         super(_data_atm, self).__init__(h0)
+    
+        self._landfrac = None
+
+
+    @property
+    def landfrac(self):
+        return self.__get_prop__('_landfrac', 'LANDFRAC').isel(time=0)
+
+
 
 # =============================================================================
 
