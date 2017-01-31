@@ -4,13 +4,13 @@
 #Author: Mathias Hauser
 #Date: 
 
-
+import os
 from os import path
 
 
 class post_cls(object):
     """handling of file names in the 'post' folder"""
-    def __init__(self, folder_post, casedef, hist, modname):
+    def __init__(self, folder_post, casedef, hist, modname, add_hist=True):
         super(post_cls, self).__init__()
 
         self.folder_post = folder_post
@@ -18,9 +18,11 @@ class post_cls(object):
         self._name = casedef['name']
         self._hist = hist
         self._modname = modname
+        self.add_hist = add_hist
         
 
-    def pre_suf(self, prefix='', suffix='', file_type='nc'):
+    def pre_suf(self, prefix='', suffix='', prefix_folder=False, 
+                file_type='nc'):
         """
         Create filename by attaching pre- and suffix to std name
         """
@@ -38,18 +40,32 @@ class post_cls(object):
         if isinstance(suffix, basestring):
             suffix = [suffix]
 
-
-
         file_base = [self._name,     # name of run
                      self._modname,  # name of module
-                     self._hist      # hist file name
                     ]
 
+        if self.add_hist:
+            file_base += [self._hist]      # hist file name
 
         file = sep.join(prefix + file_base + suffix + [file_type])
 
+        if prefix_folder:
+            folder = os.path.join(self.folder_post, *prefix)
+            _mkdir(folder)
+        else:
+            folder = self.folder_post
+    
 
-        return path.join(self.folder_post, file)
+        return os.path.join(folder, file)
+
+
+def _mkdir(directory):
+    # create a directory
+    try:
+        os.makedirs(directory)   
+    except OSError as e:
+        pass
+
 
 
     def full(self, name, file_type='nc'):
