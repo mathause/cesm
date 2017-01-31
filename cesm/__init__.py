@@ -4,6 +4,9 @@
 #Author: Mathias Hauser
 #Date: 
 
-from .case_.case import case, print_casenames
-from .case_.comp import _lnd, _atm, _ice, _ocn
-from .case_.combcase import combcase
+from ._case.case import case, print_casenames
+from ._case.comp import _lnd, _atm, _ice, _ocn
+from ._case.combcase import combcase
+
+from ._load import load
+
