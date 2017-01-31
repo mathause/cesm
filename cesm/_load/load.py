@@ -1,9 +1,9 @@
-import six
-import numpy as np
-import os
-import xarray as xr
-import pandas as pd
-from scipy import stats
+import six as _six
+import numpy as _np
+import os as _os
+import xarray as _xr
+import pandas as _pd
+from scipy import stats as _stats
 
 def var(hist, varname, year):
     
@@ -11,7 +11,7 @@ def var(hist, varname, year):
                         force_save=False, check_age=False)
 
     
-    return xr.read_netcdfs_cesm(source_files, 'time')
+    return _xr.read_netcdfs_cesm(source_files, 'time')
 
 # -----------------------------------------------------------------------------
 
@@ -28,13 +28,13 @@ def clim_monthly(hist, varname, year):
 def soillev(hist, varname, year, transform_func=None):
 
     prefix = 'soillev'
-    transform_func_internal = trans_soilliq_soillev
+    transform_func_internal = _trans_soilliq_soillev
 
     fNs = _postprocess(hist, varname, year, prefix=prefix,
                        transform_func=transform_func_internal, new_var=None,
                        force_save=False, check_age=False)
 
-    return xr.read_netcdfs_cesm(fNs, 'time', transform_func=transform_func)
+    return _xr.read_netcdfs_cesm(fNs, 'time', transform_func=transform_func)
 
 # -----------------------------------------------------------------------------
 
@@ -42,13 +42,13 @@ def soillev(hist, varname, year, transform_func=None):
 def var_SREX_LAND(hist, varname, year, force_save=False, check_age=False):
 
     prefix = 'SREX'
-    transform_func = trans_SREX_LAND_var
+    transform_func = _trans_SREX_LAND_var
 
     fNs = _postprocess(hist, varname, year, prefix=prefix,
                        transform_func=transform_func, new_var=None,
                        force_save=force_save, check_age=check_age)
 
-    return xr.read_netcdfs_cesm(fNs, 'time')
+    return _xr.read_netcdfs_cesm(fNs, 'time')
 
 # -----------------------------------------------------------------------------
 
@@ -63,13 +63,13 @@ def annual_XXX(hist, varname, year, apply_func='mean'):
                        transform_func=transform_func, new_var=None,
                        force_save=False, check_age=False)
 
-    return xr.read_netcdfs_cesm(fNs, 'time')
+    return _xr.read_netcdfs_cesm(fNs, 'time')
 
 # ======================================================================
 # TRANSFORMATION FUNCTIONS
 # ======================================================================
 
-def trans_extract_var(varname, hist):
+def _trans_extract_var(varname, hist):
     # extract a named variable
     def _inner(ds):
         return ds[varname]
@@ -78,7 +78,7 @@ def trans_extract_var(varname, hist):
 
 # -----------------------------------------------------------------------------
 
-def trans_evapotranspiration(varname, hist):
+def _trans_evapotranspiration(varname, hist):
     # evatranspiration is QSOIL + QVEGE + QVEGT
     def _inner(ds):
         return ds.QSOIL + ds.QVEGE + ds.QVEGT
@@ -87,7 +87,7 @@ def trans_evapotranspiration(varname, hist):
 
 # -----------------------------------------------------------------------------
 
-def trans_soilliq(varname, hist):
+def _trans_soilliq(varname, hist):
     # we only need the first 10 levels of SOILLIQ/ SOILICE
     def _inner(ds):
         return ds[varname].isel(levgrnd=slice(None, 10))
@@ -96,7 +96,7 @@ def trans_soilliq(varname, hist):
 
 # -----------------------------------------------------------------------------
 
-def trans_SREX_LAND_var(varname, hist):
+def _trans_SREX_LAND_var(varname, hist):
 
     # obtain necessary data
     import regionmask
@@ -121,7 +121,7 @@ def trans_SREX_LAND_var(varname, hist):
             ave.append(a)
 
 
-        ds = xr.concat(ave, dim='srex')
+        ds = _xr.concat(ave, dim='srex')
 
         # add the name of the regions
         ds = ds.assign_coords(**{'srex_abbrev': ('srex', abbrevs)})
@@ -133,7 +133,7 @@ def trans_SREX_LAND_var(varname, hist):
 
 # -----------------------------------------------------------------------------
 
-def trans_soilliq_soillev(varname, hist):
+def _trans_soilliq_soillev(varname, hist):
     # split soil into three parts: 0 to 10 // 10 to 100 // 100 to 380 cm
     
     def _inner(ds):
@@ -142,7 +142,7 @@ def trans_soilliq_soillev(varname, hist):
         ds = ds[varname].isel(levgrnd=slice(None, 10))
 
         # split levgrnd
-        soillev = pd.cut(ds.levgrnd, [0, 0.1, 1, 2.9])
+        soillev = _pd.cut(ds.levgrnd, [0, 0.1, 1, 2.9])
         
         # add the new category 
         ds = ds.assign_coords(soillev=('levgrnd', soillev))
@@ -164,7 +164,7 @@ def _trans_annual_XXX(apply_func):
         def _inner(ds):
 
             ds = ds[varname]
-            year = stats.mode(ds['time.year'].values)[0][0]
+            year = _stats.mode(ds['time.year'].values)[0][0]
             ds = ds.sel(time=str(year))
             ds = ds.resample('A', 'time', how=apply_func, keep_attrs=True)
 
@@ -177,7 +177,7 @@ def _trans_annual_XXX(apply_func):
 
 
 
-def _postprocess(hist, varname, year, prefix='', transform_func=trans_extract_var,
+def _postprocess(hist, varname, year, prefix='', transform_func=_trans_extract_var,
                  new_var=None, force_save=False, check_age=False):
 
     prefix = _prefix(prefix, varname)
@@ -186,10 +186,10 @@ def _postprocess(hist, varname, year, prefix='', transform_func=trans_extract_va
         new_var = varname
 
     # list of years we want to process
-    years = np.unique(hist.year[hist._get_sel(year=year)])
+    years = _np.unique(hist.year[hist._get_sel(year=year)])
 
     # first and last years
-    yearmin, yearmax = np.min(years), np.max(years)
+    yearmin, yearmax = _np.min(years), _np.max(years)
 
     # created destination files
     dest_files = []
@@ -253,7 +253,7 @@ def _save_var(source_files, dest_file, varname, hist, new_var,
 
     """save variable in annual files, one per variable"""
 
-    ds = xr.read_netcdfs_cesm(source_files, 'time', transform_func(varname, hist))
+    ds = _xr.read_netcdfs_cesm(source_files, 'time', transform_func(varname, hist))
 
     ds = ds.to_dataset(name=new_var)
 
@@ -296,31 +296,31 @@ def _any_file_does_not_exist(fnames):
     """
 
     fnames = _str2lst(fnames)
-    inexistent = [not os.path.isfile(fN) for fN in fnames]
+    inexistent = [not _os.path.isfile(fN) for fN in fnames]
     
-    return np.any(np.array(inexistent))
+    return _np.any(_np.array(inexistent))
 
 
 
 
 def _source_files_newer_(source_files, dest_file):
 
-    if isinstance(source_files, six.string_types):
+    if isinstance(source_files, _six.string_types):
         source_files = [source_files]
 
-    age_source = [os.path.getctime(sf) for sf in source_files]
-    age_dest = os.path.getctime(dest_file)
+    age_source = [_os.path.getctime(sf) for sf in source_files]
+    age_dest = _os.path.getctime(dest_file)
 
-    source_is_older = np.array(age_source) < np.array(age_dest)
+    source_is_older = _np.array(age_source) < _np.array(age_dest)
 
-    return np.all(source_is_older)
+    return _np.all(source_is_older)
 
 
 
 def _str2lst(list_or_string):
     # convert a string to a list
 
-    if isinstance(list_or_string, six.string_types):
+    if isinstance(list_or_string, _six.string_types):
         list_or_string = [list_or_string]    
 
     return list_or_string
