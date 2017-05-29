@@ -6,7 +6,7 @@
 
 import os
 from os import path
-
+import six
 
 class post_cls(object):
     """handling of file names in the 'post' folder"""
@@ -34,10 +34,10 @@ class post_cls(object):
         suffix = suffix if suffix != '' else []
 
         # check if prefix/ suffix is 
-        if isinstance(prefix, basestring):
+        if isinstance(prefix, six.string_types):
             prefix = [prefix]
 
-        if isinstance(suffix, basestring):
+        if isinstance(suffix, six.string_types):
             suffix = [suffix]
 
         file_base = [self._name,     # name of run
@@ -59,13 +59,6 @@ class post_cls(object):
         return os.path.join(folder, file)
 
 
-def _mkdir(directory):
-    # create a directory
-    try:
-        os.makedirs(directory)   
-    except OSError as e:
-        pass
-
 
 
     def full(self, name, file_type='nc'):
@@ -77,3 +70,13 @@ def _mkdir(directory):
         file = sep.join([name, file_type])
         
         return path.join(self.folder_post, file)
+
+
+
+
+def _mkdir(directory):
+    # create a directory
+    try:
+        os.makedirs(directory)   
+    except OSError as e:
+        pass
