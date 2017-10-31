@@ -95,11 +95,46 @@ class _data_atm(_data):
         super(_data_atm, self).__init__(h0)
     
         self._landfrac = None
+        self._hyam = None
+        self._hybm = None
+        self._hyai = None
+        self._hybi = None
 
+        self._P0 = None
 
     @property
     def landfrac(self):
         return self.__get_prop__('_landfrac', 'LANDFRAC').isel(time=0)
+
+    @property
+    def hyam(self):
+        """hybrid B coefficient at layer midpoints
+        """
+        return self.__get_prop__('_hyam', 'hyam')
+
+    @property
+    def hybm(self):
+        """hybrid B coefficient at layer midpoints
+        """
+        return self.__get_prop__('_hybm', 'hybm')
+
+    @property
+    def hyai(self):
+        """hybrid A coefficient at layer interfaces
+        """
+        return self.__get_prop__('_hyai', 'hyai')
+
+    @property
+    def hybi(self):
+        """hybrid B coefficient at layer interfaces
+        """
+        return self.__get_prop__('_hybi', 'hybi')
+
+    @property
+    def P0(self):
+        return self.__get_prop__('_P0', 'P0')
+
+
 
 
 
