@@ -28,6 +28,25 @@ def clim_monthly(hist, varname, year):
 # -----------------------------------------------------------------------------
 
 
+def evapotranspiration(hist, varname='ET', year=None, processes=1):
+    
+    transform_func_internal = _trans_evapotranspiration
+
+    # no varname required
+    new_var = 'ET'
+
+    source_files = _postprocess(hist, varname, year=year,
+                                transform_func=transform_func_internal,
+                                force_save=False, check_age=False,
+                                processes=processes, new_var=new_var, 
+                                )
+
+    
+    return _xr.read_netcdfs_cesm(source_files, 'time')
+
+# -----------------------------------------------------------------------------
+
+
 def soillev(hist, varname, year, transform_func=None):
 
     prefix = 'soillev'
@@ -98,11 +117,11 @@ def _trans_extract_var(varname, hist):
 
 # -----------------------------------------------------------------------------
 
-# def _trans_evapotranspiration(varname, hist):
-#     # evatranspiration is QSOIL + QVEGE + QVEGT
-#     def _inner(ds):
-#         return ds.QSOIL + ds.QVEGE + ds.QVEGT
-#     return _inner
+def _trans_evapotranspiration(varname, hist):
+    # evatranspiration is QSOIL + QVEGE + QVEGT
+    def _inner(ds):
+        return ds.QSOIL + ds.QVEGE + ds.QVEGT
+    return _inner
 
 
 # -----------------------------------------------------------------------------
@@ -228,11 +247,18 @@ def _trans_soilliq_soillev(varname, hist):
         # split levgrnd
         soillev = _pd.cut(ds.levgrnd, [0, 0.1, 1, 2.9])
         
+
         # add the new category 
         ds = ds.assign_coords(soillev=('levgrnd', soillev))
         
         # take sum over the three parts
         ds = ds.groupby('soillev').sum(dim='levgrnd', skipna=False)
+
+        # hack: turn pandas IntervalIndex to string
+        # soillev = ds.soillev.values
+        #soillev = [n.__str__() for n in soillev]
+        soillev = ["(0, 0.1]", "(0.1, 1]", "(1, 2.9]"]
+        ds.soillev.values[:] = soillev
 
         return ds
 
@@ -308,11 +334,10 @@ def _postprocess(hist, varname, year, prefix='', new_var=None,
 
     """
 
-
-    prefix = _prefix(prefix, varname)
-
     if new_var is None:
         new_var = varname
+
+    prefix = _prefix(prefix, new_var)
 
     # list of years we want to process
     years = _np.unique(hist.year[hist._get_sel(year=year)])
