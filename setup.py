@@ -1,7 +1,13 @@
 from setuptools import setup, find_packages
 
+# get version
+with open("cesm/version.py") as f:
+    l = f.readline().strip().replace(' ', '').replace('"', '')
+    version = l.split('=')[1]
+    __version__ = version
+
 setup(name='cesm',
-      version='0.1.0',
+      version=__version__,
       description="cesm utilities",
       url='',
       author='Mathias Hauser',
