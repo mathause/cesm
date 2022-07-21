@@ -1,14 +1,14 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-#Author: Mathias Hauser
-#Date: 
+# Author: Mathias Hauser
+# Date:
 
-import numpy as np
 import warnings
 
-from .post import post_cls
+import numpy as np
 
+from .post import post_cls
 
 # CODE SAMPLE -> SUBCLASS str TO add 'folder_post' to every string
 
@@ -28,15 +28,24 @@ from .post import post_cls
 #         self.folder_post = str(folder_post)
 
 
-
-
-
 class _hist(object):
 
     """subset history streams"""
 
-    def __init__(self, hist, filename, fullname, year, month, day, second,
-                 folder_post, case, modname, comp):
+    def __init__(
+        self,
+        hist,
+        filename,
+        fullname,
+        year,
+        month,
+        day,
+        second,
+        folder_post,
+        case,
+        modname,
+        comp,
+    ):
 
         super(_hist, self).__init__()
 
@@ -64,9 +73,9 @@ class _hist(object):
     @property
     def data(self):
         if self._data is None:
-            if self.comp == 'lnd':
+            if self.comp == "lnd":
                 self._data = self._lnd_data
-            elif self.comp == 'atm':
+            elif self.comp == "atm":
                 self._data = self._atm_data
             else:
                 self._data = None
@@ -78,7 +87,7 @@ class _hist(object):
         if self.__lnd_data is None:
             self.__lnd_data = self._case.lnd._lnd_data
         return self.__lnd_data
-    
+
     @property
     def _atm_data(self):
         if self.__atm_data is None:
@@ -92,7 +101,6 @@ class _hist(object):
             return out[0]
         else:
             return out
-
 
     @property
     def filename(self):
@@ -179,7 +187,6 @@ class _hist(object):
         sel = self._get_sel(year, month, day, second, last)
 
         return self[sel]
-
 
     @staticmethod
     def __get_sel_single__(sel, data, condition):

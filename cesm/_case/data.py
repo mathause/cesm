@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-#Author: Mathias Hauser
-#Date: 
+# Author: Mathias Hauser
+# Date:
 
 import numpy as np
 
@@ -15,8 +15,8 @@ class _data(object):
         super(_data, self).__init__()
 
         self._h0 = h0
-        self._lat_name = 'lat'
-        self._lon_name = 'lon'
+        self._lat_name = "lat"
+        self._lon_name = "lon"
 
         self.filename = h0[0]
 
@@ -26,11 +26,11 @@ class _data(object):
 
     @property
     def lat(self):
-        return self.__get_prop__('_lat', self._lat_name)
+        return self.__get_prop__("_lat", self._lat_name)
 
     @property
     def lon(self):
-        return self.__get_prop__('_lon', self._lon_name)
+        return self.__get_prop__("_lon", self._lon_name)
 
     # weight is special
     @property
@@ -47,7 +47,9 @@ class _data(object):
 
     def __get_data__(self, varname):
         import xarray as xr
+
         return xr.open_cesm(self.filename)[varname]
+
 
 # =============================================================================
 
@@ -68,32 +70,34 @@ class _data_lnd(_data):
 
     @property
     def area(self):
-        return self.__get_prop__('_area', 'area')
+        return self.__get_prop__("_area", "area")
 
     @property
     def landfrac(self):
-        return self.__get_prop__('_landfrac', 'landfrac')
+        return self.__get_prop__("_landfrac", "landfrac")
 
     @property
     def landmask(self):
-        return self.__get_prop__('_landmask', 'landmask')
+        return self.__get_prop__("_landmask", "landmask")
 
     @property
     def DZSOI(self):
-        return self.__get_prop__('_DZSOI', 'DZSOI')
+        return self.__get_prop__("_DZSOI", "DZSOI")
 
     @property
     def ZSOI(self):
-        return self.__get_prop__('_ZSOI', 'ZSOI')
+        return self.__get_prop__("_ZSOI", "ZSOI")
+
 
 # =============================================================================
 
 
 class _data_atm(_data):
     """docstring for _data_land"""
+
     def __init__(self, h0):
         super(_data_atm, self).__init__(h0)
-    
+
         self._landfrac = None
         self._hyam = None
         self._hybm = None
@@ -104,38 +108,31 @@ class _data_atm(_data):
 
     @property
     def landfrac(self):
-        return self.__get_prop__('_landfrac', 'LANDFRAC').isel(time=0)
+        return self.__get_prop__("_landfrac", "LANDFRAC").isel(time=0)
 
     @property
     def hyam(self):
-        """hybrid B coefficient at layer midpoints
-        """
-        return self.__get_prop__('_hyam', 'hyam')
+        """hybrid B coefficient at layer midpoints"""
+        return self.__get_prop__("_hyam", "hyam")
 
     @property
     def hybm(self):
-        """hybrid B coefficient at layer midpoints
-        """
-        return self.__get_prop__('_hybm', 'hybm')
+        """hybrid B coefficient at layer midpoints"""
+        return self.__get_prop__("_hybm", "hybm")
 
     @property
     def hyai(self):
-        """hybrid A coefficient at layer interfaces
-        """
-        return self.__get_prop__('_hyai', 'hyai')
+        """hybrid A coefficient at layer interfaces"""
+        return self.__get_prop__("_hyai", "hyai")
 
     @property
     def hybi(self):
-        """hybrid B coefficient at layer interfaces
-        """
-        return self.__get_prop__('_hybi', 'hybi')
+        """hybrid B coefficient at layer interfaces"""
+        return self.__get_prop__("_hybi", "hybi")
 
     @property
     def P0(self):
-        return self.__get_prop__('_P0', 'P0')
-
-
-
+        return self.__get_prop__("_P0", "P0")
 
 
 # =============================================================================

@@ -1,20 +1,21 @@
-import six as _six
-import numpy as _np
-import os as _os
-import xarray as _xr
-import pandas as _pd
-from scipy import stats as _stats
 import multiprocessing as _multiprocessing
+import os as _os
+
+import numpy as _np
+import pandas as _pd
+import six as _six
+import xarray as _xr
+from scipy import stats as _stats
 
 
 def var(hist, varname, year, processes=1):
-    
-    source_files = _postprocess(hist, varname, year=year,
-                        force_save=False, check_age=False,
-                        processes=processes)
 
-    
-    return _xr.read_netcdfs_cesm(source_files, 'time')
+    source_files = _postprocess(
+        hist, varname, year=year, force_save=False, check_age=False, processes=processes
+    )
+
+    return _xr.read_netcdfs_cesm(source_files, "time")
+
 
 # -----------------------------------------------------------------------------
 
@@ -22,105 +23,144 @@ def var(hist, varname, year, processes=1):
 def clim_monthly(hist, varname, year):
 
     ds = var(hist, varname, year)
-    
-    return ds.groupby('time.month').mean(dim='time')
+
+    return ds.groupby("time.month").mean(dim="time")
+
 
 # -----------------------------------------------------------------------------
 
 
-def evapotranspiration(hist, varname='ET', year=None, processes=1):
-    
+def evapotranspiration(hist, varname="ET", year=None, processes=1):
+
     transform_func_internal = _trans_evapotranspiration
 
     # no varname required
-    new_var = 'ET'
+    new_var = "ET"
 
-    source_files = _postprocess(hist, varname, year=year,
-                                transform_func=transform_func_internal,
-                                force_save=False, check_age=False,
-                                processes=processes, new_var=new_var, 
-                                )
+    source_files = _postprocess(
+        hist,
+        varname,
+        year=year,
+        transform_func=transform_func_internal,
+        force_save=False,
+        check_age=False,
+        processes=processes,
+        new_var=new_var,
+    )
 
-    
-    return _xr.read_netcdfs_cesm(source_files, 'time')
+    return _xr.read_netcdfs_cesm(source_files, "time")
+
 
 # -----------------------------------------------------------------------------
 
 
 def soillev(hist, varname, year, transform_func=None):
 
-    prefix = 'soillev'
+    prefix = "soillev"
     transform_func_internal = _trans_soilliq_soillev
 
-    fNs = _postprocess(hist, varname, year, prefix=prefix,
-                       transform_func=transform_func_internal, new_var=None,
-                       force_save=False, check_age=False)
+    fNs = _postprocess(
+        hist,
+        varname,
+        year,
+        prefix=prefix,
+        transform_func=transform_func_internal,
+        new_var=None,
+        force_save=False,
+        check_age=False,
+    )
 
-    return _xr.read_netcdfs_cesm(fNs, 'time', transform_func=transform_func)
+    return _xr.read_netcdfs_cesm(fNs, "time", transform_func=transform_func)
+
 
 # -----------------------------------------------------------------------------
 
 
 def var_SREX_LAND(hist, varname, year, force_save=False, check_age=False):
 
-    prefix = 'SREX'
+    prefix = "SREX"
     transform_func = _trans_SREX_LAND_var
 
-    fNs = _postprocess(hist, varname, year, prefix=prefix,
-                       transform_func=transform_func, new_var=None,
-                       force_save=force_save, check_age=check_age)
+    fNs = _postprocess(
+        hist,
+        varname,
+        year,
+        prefix=prefix,
+        transform_func=transform_func,
+        new_var=None,
+        force_save=force_save,
+        check_age=check_age,
+    )
 
-    return _xr.read_netcdfs_cesm(fNs, 'time')
+    return _xr.read_netcdfs_cesm(fNs, "time")
+
 
 # -----------------------------------------------------------------------------
 
 
-def _var_SREX_LAND_NOTWEIGHTED(hist, varname, year, force_save=False,
-                               check_age=False):
+def _var_SREX_LAND_NOTWEIGHTED(hist, varname, year, force_save=False, check_age=False):
 
-    prefix = 'SREX_NOTWEIGHTED'
+    prefix = "SREX_NOTWEIGHTED"
     transform_func = _trans_SREX_LAND_var_NOTWEIGHTED
 
-    fNs = _postprocess(hist, varname, year, prefix=prefix,
-                       transform_func=transform_func, new_var=None,
-                       force_save=force_save, check_age=check_age)
+    fNs = _postprocess(
+        hist,
+        varname,
+        year,
+        prefix=prefix,
+        transform_func=transform_func,
+        new_var=None,
+        force_save=force_save,
+        check_age=check_age,
+    )
 
-    return _xr.read_netcdfs_cesm(fNs, 'time')
-
+    return _xr.read_netcdfs_cesm(fNs, "time")
 
 
 # -----------------------------------------------------------------------------
 
 
-def annual_resample(hist, varname, year, apply_func='mean'):
+def annual_resample(hist, varname, year, apply_func="mean"):
 
-    prefix = ['annual', apply_func]
-    
+    prefix = ["annual", apply_func]
+
     transform_func = _trans_annual_resample(apply_func)
 
-    fNs = _postprocess(hist, varname, year, prefix=prefix,
-                       transform_func=transform_func, new_var=None,
-                       force_save=False, check_age=False)
+    fNs = _postprocess(
+        hist,
+        varname,
+        year,
+        prefix=prefix,
+        transform_func=transform_func,
+        new_var=None,
+        force_save=False,
+        check_age=False,
+    )
 
-    return _xr.read_netcdfs_cesm(fNs, 'time')
+    return _xr.read_netcdfs_cesm(fNs, "time")
+
 
 # ======================================================================
 # TRANSFORMATION FUNCTIONS
 # ======================================================================
 
+
 def _trans_extract_var(varname, hist):
     # extract a named variable
     def _inner(ds):
         return ds[varname]
+
     return _inner
 
 
 # -----------------------------------------------------------------------------
 
+
 def _trans_evapotranspiration(varname, hist):
     # evatranspiration is QSOIL + QVEGE + QVEGT
     def _inner(ds):
         return ds.QSOIL + ds.QVEGE + ds.QVEGT
+
     return _inner
 
 
@@ -135,6 +175,7 @@ def _trans_evapotranspiration(varname, hist):
 
 # -----------------------------------------------------------------------------
 
+
 def _trans_SREX_LAND_var(varname, hist):
     """
     calculate var for each SREX region and global land mean
@@ -143,39 +184,39 @@ def _trans_SREX_LAND_var(varname, hist):
 
     # obtain necessary data
     import regionmask
+
     landfrac = hist.data.landfrac
     weight = hist.data.weight
 
     wgt = landfrac * weight
     mask = regionmask.defined_regions.srex.mask(landfrac, wrap_lon=True)
-    
-    abbrevs = ['global', 'global_land', 'global_land_wo_antarctica'] 
+
+    abbrevs = ["global", "global_land", "global_land_wo_antarctica"]
     abbrevs += regionmask.defined_regions.srex.abbrevs
 
     # extract a named variable
     def _inner(ds):
         ds = ds[varname]
-        
-        # global mean 
-        ave = [ds.average(dim=('lat', 'lon'), weights=weight)]
+
+        # global mean
+        ave = [ds.average(dim=("lat", "lon"), weights=weight)]
 
         # global land mean
-        a = ds.average(dim=('lat', 'lon'), weights=wgt)
+        a = ds.average(dim=("lat", "lon"), weights=wgt)
         ave.append(a)
 
         # global land mean w/o antarctica
         d = ds.sel(lat=slice(-60, 87))
-        a = d.average(dim=('lat', 'lon'), weights=wgt)
+        a = d.average(dim=("lat", "lon"), weights=wgt)
         ave.append(a)
 
         # srex mean
         for i in range(1, 27):
-            a = ds.where(mask == i).average(dim=('lat', 'lon'), weights=wgt)
+            a = ds.where(mask == i).average(dim=("lat", "lon"), weights=wgt)
 
             ave.append(a)
 
-
-        ds = _xr.concat(ave, dim='srex')
+        ds = _xr.concat(ave, dim="srex")
 
         # shift srex coordinates such that 1 to 26 corresponds to the
         # regions
@@ -183,13 +224,15 @@ def _trans_SREX_LAND_var(varname, hist):
         ds.srex.values[:] = x
 
         # add the name of the regions
-        ds = ds.assign_coords(**{'srex_abbrev': ('srex', abbrevs)})
+        ds = ds.assign_coords(**{"srex_abbrev": ("srex", abbrevs)})
 
         return ds
 
     return _inner
 
+
 # -----------------------------------------------------------------------------
+
 
 def _trans_SREX_LAND_var_NOTWEIGHTED(varname, hist):
     """
@@ -199,31 +242,31 @@ def _trans_SREX_LAND_var_NOTWEIGHTED(varname, hist):
 
     # obtain necessary data
     import regionmask
+
     landfrac = hist.data.landfrac
     weight = hist.data.weight
 
     wgt = landfrac
     mask = regionmask.defined_regions.srex.mask(landfrac, wrap_lon=True)
-    abbrevs = ['global_land'] + regionmask.defined_regions.srex.abbrevs
+    abbrevs = ["global_land"] + regionmask.defined_regions.srex.abbrevs
 
     # extract a named variable
     def _inner(ds):
         ds = ds[varname]
-        
+
         # global land mean
-        ave = [ds.average(dim=('lat', 'lon'), weights=wgt)]
+        ave = [ds.average(dim=("lat", "lon"), weights=wgt)]
 
         # srex mean
         for i in range(1, 27):
-            a = ds.where(mask == i).average(dim=('lat', 'lon'), weights=wgt)
+            a = ds.where(mask == i).average(dim=("lat", "lon"), weights=wgt)
 
             ave.append(a)
 
-
-        ds = _xr.concat(ave, dim='srex')
+        ds = _xr.concat(ave, dim="srex")
 
         # add the name of the regions
-        ds = ds.assign_coords(**{'srex_abbrev': ('srex', abbrevs)})
+        ds = ds.assign_coords(**{"srex_abbrev": ("srex", abbrevs)})
 
         return ds
 
@@ -232,13 +275,14 @@ def _trans_SREX_LAND_var_NOTWEIGHTED(varname, hist):
 
 # -----------------------------------------------------------------------------
 
+
 def _trans_soilliq_soillev(varname, hist):
     """
     transformation function to extract SOILLIQ/ ICE in three levels
-    
+
     split soil into three parts: 0 to 10 // 10 to 100 // 100 to 380 cm
     """
-    
+
     def _inner(ds):
 
         # only the 10 first levels
@@ -246,17 +290,16 @@ def _trans_soilliq_soillev(varname, hist):
 
         # split levgrnd
         soillev = _pd.cut(ds.levgrnd, [0, 0.1, 1, 2.9])
-        
 
-        # add the new category 
-        ds = ds.assign_coords(soillev=('levgrnd', soillev))
-        
+        # add the new category
+        ds = ds.assign_coords(soillev=("levgrnd", soillev))
+
         # take sum over the three parts
-        ds = ds.groupby('soillev').sum(dim='levgrnd', skipna=False)
+        ds = ds.groupby("soillev").sum(dim="levgrnd", skipna=False)
 
         # hack: turn pandas IntervalIndex to string
         # soillev = ds.soillev.values
-        #soillev = [n.__str__() for n in soillev]
+        # soillev = [n.__str__() for n in soillev]
         soillev = ["(0, 0.1]", "(0.1, 1]", "(1, 2.9]"]
         ds.soillev.values[:] = soillev
 
@@ -266,6 +309,7 @@ def _trans_soilliq_soillev(varname, hist):
 
 
 # -----------------------------------------------------------------------------
+
 
 def _trans_annual_resample(apply_func):
     """
@@ -279,26 +323,34 @@ def _trans_annual_resample(apply_func):
     """
 
     def _trans_annual_resample_internal(varname, hist):
-
         def _inner(ds):
 
             ds = ds[varname]
-            year = _stats.mode(ds['time.year'].values)[0][0]
+            year = _stats.mode(ds["time.year"].values)[0][0]
             ds = ds.sel(time=str(year))
-            ds = ds.resample('A', 'time', how=apply_func, keep_attrs=True)
+            ds = ds.resample("A", "time", how=apply_func, keep_attrs=True)
 
             return ds
+
         return _inner
+
     return _trans_annual_resample_internal
 
 
 # =============================================================================
 
 
-
-def _postprocess(hist, varname, year, prefix='', new_var=None, 
-                 transform_func=_trans_extract_var, force_save=False,
-                 check_age=False, processes=1):
+def _postprocess(
+    hist,
+    varname,
+    year,
+    prefix="",
+    new_var=None,
+    transform_func=_trans_extract_var,
+    force_save=False,
+    check_age=False,
+    processes=1,
+):
     """
     generic function postprocessing/ saving all selected cesm files
 
@@ -309,10 +361,10 @@ def _postprocess(hist, varname, year, prefix='', new_var=None,
     varname : str
         Name of the variable.
     year : None | int | slice
-        Select year. None makes no selection. int select exclusively 
+        Select year. None makes no selection. int select exclusively
         this year. slice(start, end) selects range of year (inclusive).
     prefix : list of str
-        Strings to prepend the name of the simulation (after the 
+        Strings to prepend the name of the simulation (after the
         folder). See also _prefix function.
     new_var : string or None, optional
         New name for the variable, e.g. when saving ET.
@@ -321,11 +373,11 @@ def _postprocess(hist, varname, year, prefix='', new_var=None,
     force_save : bool, optional
         If True, forces a (re-)save. Default: False.
     check_age : bool, optional
-        Check if source_files are younger than dest_file. If so, 
+        Check if source_files are younger than dest_file. If so,
         re-save. Default: False.
     processes : int, optional
         For multiprocessing.
-    
+
     Returns
     =======
     dest_files : list of strings
@@ -356,46 +408,53 @@ def _postprocess(hist, varname, year, prefix='', new_var=None,
         # name of source and destination files
         source_files = hist.sel(year=year)
         dest_file = _destfile_name(hist, prefix, year)
-        
+
         dest_files.append(dest_file)
 
         # do we need to save the file?
         if _maybe_save(source_files, dest_file, force_save, check_age):
-            
+
             years_require_saving.append(year)
 
             # check that all files exist or error
             _check_all_files_exist(source_files)
-        
+
     # loop only years that need to be saved
     if years_require_saving:
         n_years_require_saving = len(years_require_saving)
-        print(str(n_years_require_saving) + ' years require saving')
+        print(str(n_years_require_saving) + " years require saving")
 
         # prepare for parallel processing
         all_args = list()
         for year in years_require_saving:
 
-            msg = 'writing variable: {} in {}..{}'
+            msg = "writing variable: {} in {}..{}"
             msg = msg.format(year, yearmin, yearmax)
-            
+
             # name of source and destination files
             source_files = hist.sel(year=year)
             dest_file = _destfile_name(hist, prefix, year)
 
             # pack arguments
-            args = (source_files, dest_file, varname, hist, new_var, 
-                    transform_func, msg)
-            
+            args = (
+                source_files,
+                dest_file,
+                varname,
+                hist,
+                new_var,
+                transform_func,
+                msg,
+            )
+
             # no multiprocessing
             if processes == 1:
                 # save it
                 _save_var(args)
-            
+
             # multiprocessing
             else:
                 all_args.append(args)
-        
+
         # multiprocessing
         if processes > 1:
             pool = _multiprocessing.Pool(processes=processes)
@@ -405,9 +464,8 @@ def _postprocess(hist, varname, year, prefix='', new_var=None,
             try:
                 results = p.get(0xFFFF)
             except KeyboardInterrupt:
-                print('parent received control-c')
+                print("parent received control-c")
                 return
-
 
     return dest_files
 
@@ -421,7 +479,7 @@ def _destfile_name(hist, prefix, year):
     hist : cesm hist class
         Instance of the hist class from cesm package.
     prefix : list of str
-        Strings to prepend the name of the simulation (after the 
+        Strings to prepend the name of the simulation (after the
         folder). See also _prefix function.
     year : integer
         Year which is read/ saved. Added as suffix.
@@ -429,10 +487,11 @@ def _destfile_name(hist, prefix, year):
 
     return hist.post.pre_suf(prefix, str(year), prefix_folder=True)
 
+
 def _prefix(prefix, varname):
     """
     parse prefix and add name of the variable
-    
+
     Parameters
     ----------
     prefix : str
@@ -457,12 +516,12 @@ def _prefix(prefix, varname):
     ['TS', 'mean', 'US']
 
     """
-    
+
     # empty list if prefix is ''
-    prefix = prefix if prefix != '' else []
-    
+    prefix = prefix if prefix != "" else []
+
     prefix = _str2lst(prefix)
-    
+
     return [varname] + prefix
 
 
@@ -472,25 +531,21 @@ def _save_var(args):
     """
 
     # unpack args
-    (source_files, dest_file, varname, hist, new_var, 
-        transform_func, msg) = args
+    (source_files, dest_file, varname, hist, new_var, transform_func, msg) = args
 
     print(msg)
 
     # read file(s) and maybe concatenate
-    ds = _xr.read_netcdfs_cesm(source_files, 'time',
-                               transform_func(varname, hist))
+    ds = _xr.read_netcdfs_cesm(source_files, "time", transform_func(varname, hist))
 
     # maybe rename
     ds = ds.to_dataset(name=new_var)
 
     # save as yearly file
-    ds.to_netcdf(dest_file, format='NETCDF4_CLASSIC')
+    ds.to_netcdf(dest_file, format="NETCDF4_CLASSIC")
 
 
-
-def _maybe_save(source_files=None, dest_file=None,
-                force_save=False, check_age=False):
+def _maybe_save(source_files=None, dest_file=None, force_save=False, check_age=False):
     """
     determine if a file needs to be computed and saved
 
@@ -504,11 +559,11 @@ def _maybe_save(source_files=None, dest_file=None,
     force_save : bool, optional
         If True, forces a (re-)save. Default: False.
     check_age : bool, optional
-        Check if source_files are younger than dest_file. If so, 
+        Check if source_files are younger than dest_file. If so,
         re-save. Default: False.
 
     """
-    
+
     if force_save:
         return True
 
@@ -527,12 +582,10 @@ def _check_all_files_exist(fnames):
     """
     error if one file does not exist
     """
-    
+
     if _any_file_does_not_exist(fnames):
-        msg = "file(s) missing:\n" + '\n'.join(fnames)
+        msg = "file(s) missing:\n" + "\n".join(fnames)
         raise RuntimeError(msg)
-
-
 
 
 def _any_file_does_not_exist(fnames):
@@ -543,10 +596,8 @@ def _any_file_does_not_exist(fnames):
     fnames = _str2lst(fnames)
 
     inexistent = [not _os.path.isfile(fN) for fN in fnames]
-    
+
     return _np.any(_np.array(inexistent))
-
-
 
 
 def _source_files_newer_(source_files, dest_file):
@@ -567,21 +618,12 @@ def _source_files_newer_(source_files, dest_file):
     return _np.all(source_is_older)
 
 
-
 def _str2lst(list_or_string):
     """
     convert a string to a list
     """
 
     if isinstance(list_or_string, _six.string_types):
-        list_or_string = [list_or_string]    
+        list_or_string = [list_or_string]
 
     return list_or_string
-
-
-
-
-
-
-
-

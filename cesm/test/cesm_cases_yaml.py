@@ -1,12 +1,7 @@
-
 import os
 
-
 # determine the location of this file
-__location__ = os.path.realpath(
-    os.path.join(os.getcwd(), os.path.dirname(__file__)))
-
-
+__location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
 
 
 string = """
@@ -58,4 +53,6 @@ test_combcase_rcp8:
     folder: {location}
     name: b.e122.B2000.f19_g16.test-io192.001
 
-""".format(location=__location__, name='{name}')
+""".format(
+    location=__location__, name="{name}"
+)

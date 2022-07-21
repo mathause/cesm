@@ -1,12 +1,14 @@
 import unittest
 
-import cesm
 import cesm_cases_yaml
 
-cesm_cases_path = './test_cesm_cases.yaml'
-case_name = 'test_case'
+import cesm
+
+cesm_cases_path = "./test_cesm_cases.yaml"
+case_name = "test_case"
 
 case = cesm.case(case_name, cesm_cases_path=cesm_cases_yaml.string)
+
 
 class TestCase_Cls(unittest.TestCase):
 
@@ -20,7 +22,5 @@ class TestCase_Cls(unittest.TestCase):
         pass
 
 
-
-
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main(buffer=True)

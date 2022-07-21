@@ -6,31 +6,31 @@
 
 from __future__ import division
 
-
+import glob
 import os
+import weakref
+
 import numpy as np
 import yaml
 
-import glob
-import weakref
-
-from .comp import _lnd, _atm, _ice, _ocn
+from .comp import _atm, _ice, _lnd, _ocn
 
 
-def print_casenames(cesm_cases_path='~/cesm_cases.yaml'):
+def print_casenames(cesm_cases_path="~/cesm_cases.yaml"):
     """pretty print all case names
 
-        Parameters
-        ----------
-        cesm_cases_path : string
-            Path and name of the cesm_cases file.
-            Default: ~/cesm_cases.yaml.
+    Parameters
+    ----------
+    cesm_cases_path : string
+        Path and name of the cesm_cases file.
+        Default: ~/cesm_cases.yaml.
 
     """
 
     casedefs = __read_yaml__(cesm_cases_path)
     print("Availiable cases:")
     print(__print_casenames__(casedefs))
+
 
 # -----------------------------------------------------------------------------
 
@@ -52,6 +52,7 @@ def __print_casenames__(casedefs):
 
     return msg
 
+
 # -----------------------------------------------------------------------------
 
 
@@ -60,6 +61,7 @@ def __is_ensemble__(case):
 
     return isinstance(case, list)
 
+
 # =============================================================================
 
 
@@ -67,7 +69,7 @@ class case(object):
 
     """A case is a cesm simulation."""
 
-    def __init__(self, case_name, ens=None, cesm_cases_path='~/cesm_cases.yaml'):
+    def __init__(self, case_name, ens=None, cesm_cases_path="~/cesm_cases.yaml"):
         """
         Parameters
         ==========
@@ -80,16 +82,15 @@ class case(object):
             Default: ~/cesm_cases.yaml.
         """
 
-
         super(case, self).__init__()
         self.case_name = case_name
 
         self.cesm_cases_path = cesm_cases_path
         self.casedef = __parse_yaml__(case_name, ens, cesm_cases_path)
 
-        # check something exists at this location        
-        if not os.path.isdir(self.casedef['folder_hist']):
-            folder = self.casedef['folder_hist']
+        # check something exists at this location
+        if not os.path.isdir(self.casedef["folder_hist"]):
+            folder = self.casedef["folder_hist"]
             msg = "There is nothing at: '{}'".format(folder)
             raise RuntimeError(msg)
 
@@ -119,7 +120,7 @@ class case(object):
 
     def __call__(self, comp, hist=None):
 
-        components = ['atm', 'lnd', 'ocn', 'ice']
+        components = ["atm", "lnd", "ocn", "ice"]
         if comp not in components:
             cp = "'{0}'".format("', '".join(components))
             msg = "comp ('{}') must be any of: {}".format(comp, cp)
@@ -137,7 +138,9 @@ class case(object):
 
     def __repr__(self):
         msg = "CESM Case: {}\nfolder_hist: {}\nfolder_post: {}"
-        msg = msg.format(self.case_name, self.casedef['folder_hist'], self.casedef['folder_post'])
+        msg = msg.format(
+            self.case_name, self.casedef["folder_hist"], self.casedef["folder_post"]
+        )
         return msg
 
     # -------------------------------------------------------------------------
@@ -146,26 +149,27 @@ class case(object):
     @property
     def atm(self):
         if self._atm is None:
-            self._atm = _atm(self, 'cam')
+            self._atm = _atm(self, "cam")
         return self._atm
 
     @property
     def lnd(self):
         if self._lnd is None:
-            self._lnd = _lnd(self, 'clm2')
+            self._lnd = _lnd(self, "clm2")
         return self._lnd
 
     @property
     def ice(self):
         if self._ice is None:
-            self._ice = _ice(self, 'cice')
-        return self._ice  
+            self._ice = _ice(self, "cice")
+        return self._ice
 
     @property
     def ocn(self):
         if self._ocn is None:
-            self._ocn = _ocn(self, 'pop')
-        return self._ocn  
+            self._ocn = _ocn(self, "pop")
+        return self._ocn
+
 
 # =============================================================================
 
@@ -173,11 +177,11 @@ class case(object):
 def __read_yaml__(path):
     """read the cesm_case file
 
-        Parameters
-        ==========
-        path : string
-            Full name of the yaml file. May contain '~', expanded to home.
-            Alternatively path may be a yaml string (for testing).
+    Parameters
+    ==========
+    path : string
+        Full name of the yaml file. May contain '~', expanded to home.
+        Alternatively path may be a yaml string (for testing).
     """
 
     # expand '~' to '/home/$USER'
@@ -185,7 +189,7 @@ def __read_yaml__(path):
 
     try:
         # normal: read a file
-        with open(expanded_path, 'r') as stream:
+        with open(expanded_path, "r") as stream:
             return yaml.load(stream)
     except IOError as exception:
         # if a valid yaml string is passed
@@ -196,6 +200,7 @@ def __read_yaml__(path):
     else:
         # raise the path-not-found exception
         raise exception
+
 
 # -----------------------------------------------------------------------------
 
@@ -213,30 +218,33 @@ def __parse_yaml__(case_name, ens, cesm_cases_path):
 
     if casedef is None:
         print_casenames(cesm_cases_path)
-        msg = ("'{}' is not known. See above.".format(case_name))
+        msg = "'{}' is not known. See above.".format(case_name)
         raise KeyError(msg)
 
     # check if it is a ensemble
     if __is_ensemble__(casedef):
         # check if ens is a valid ensemble member
         if ens not in range(len(casedef)):
-            msg = ("'{case}' is an ensemble."
-                   " Specify 'ens' in the range of 0 to {ncases}".
-                   format(case=case_name, ncases=len(case) - 1))
+            msg = (
+                "'{case}' is an ensemble."
+                " Specify 'ens' in the range of 0 to {ncases}".format(
+                    case=case_name, ncases=len(case) - 1
+                )
+            )
             raise KeyError(msg)
 
         casedef = casedef[ens]
 
+    if "resolution" not in casedef.keys():
+        casedef["resolution"] = "f19_g16"
 
-    if 'resolution' not in casedef.keys():
-        casedef['resolution'] = 'f19_g16'
+    casedef["case_name"] = case_name
 
-    casedef['case_name'] = case_name
-
-    casedef['folder_hist'] = __create_folder_name__(casedef, 'hist')
-    casedef['folder_post'] = __create_folder_name__(casedef, 'post')
+    casedef["folder_hist"] = __create_folder_name__(casedef, "hist")
+    casedef["folder_post"] = __create_folder_name__(casedef, "post")
 
     return casedef
+
 
 # -----------------------------------------------------------------------------
 
@@ -245,22 +253,21 @@ def __create_folder_name__(casedef, suffix):
     """get folder path"""
 
     # is folder_post or folder_hist saved?
-    folder = casedef.get('folder_' + suffix, None)
-    case_name = casedef['name']
+    folder = casedef.get("folder_" + suffix, None)
+    case_name = casedef["name"]
 
     # construct path
     if folder:
-        if '{name}' not in folder:
+        if "{name}" not in folder:
             msg = "'{name}' must be part of folder_post or folder_hist."
             raise RuntimeError(msg)
 
         path = folder.format(name=case_name)
     else:
-        folder = casedef['folder']
+        folder = casedef["folder"]
         path = os.path.join(folder, case_name)
 
     return path
 
+
 # =============================================================================
-
-

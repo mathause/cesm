@@ -4,22 +4,23 @@
 # Author: Mathias Hauser
 # Date:
 
-import numpy as np
 import os
 import re
 import warnings
 
-from .hist import _hist
+import numpy as np
 
 from .data import _data_atm, _data_lnd
+from .hist import _hist
 from .post import post_cls
+
 
 class _comp(object):
 
     """CLASS for CESM Model COMPONENTS (lnd, atm, ...)"""
 
     def __init__(self, case, modname, comp):
-        
+
         super(_comp, self).__init__()
 
         self._case = case
@@ -35,18 +36,18 @@ class _comp(object):
 
         self.has_histfiles = False
 
-
         self.__parse_hist_files__()
 
         self.__atm_data = None
         self.__lnd_data = None
 
-        self.post = post_cls(self.folder_post, case.casedef, 'no_hist',
-                              modname, add_hist=False)
+        self.post = post_cls(
+            self.folder_post, case.casedef, "no_hist", modname, add_hist=False
+        )
 
     def __repr__(self):
         msg = "'{}' component of the CESM Case '{}'"
-        msg = msg.format(self.comp, self.casedef['case_name'])
+        msg = msg.format(self.comp, self.casedef["case_name"])
         return msg
 
     @property
@@ -56,10 +57,10 @@ class _comp(object):
             raise RuntimeError("Has not atm histfiles.")
 
         if self._case.atm.__atm_data is None:
-            self.__atm_data = _data_atm(getattr(self._case.atm, 'h0', None))
+            self.__atm_data = _data_atm(getattr(self._case.atm, "h0", None))
 
         return self.__atm_data
-    
+
     @property
     def _lnd_data(self):
 
@@ -67,18 +68,17 @@ class _comp(object):
             raise RuntimeError("Has not lnd histfiles.")
 
         if self._case.lnd.__lnd_data is None:
-            self.__lnd_data = _data_lnd(getattr(self._case.lnd, 'h0', None))
+            self.__lnd_data = _data_lnd(getattr(self._case.lnd, "h0", None))
 
         return self.__lnd_data
 
     def __call__(self, hist):
         return self[hist]
 
-
     def __getitem__(self, key):
 
         if isinstance(key, int):
-            key = 'h' + str(key)
+            key = "h" + str(key)
             return getattr(self, key)
 
         return getattr(self, key)
@@ -88,10 +88,10 @@ class _comp(object):
 
         # check if '0' or '1'
         if key.isdigit():
-            key = 'h' + key
+            key = "h" + key
             return getattr(self, key)
 
-        if key.startswith('h'):
+        if key.startswith("h"):
             msg = "No history files found for '{}'".format(key)
             raise AttributeError(msg)
         else:
@@ -99,13 +99,12 @@ class _comp(object):
             msg = "'_comp' object has no attribute '{}'".format(key)
             raise AttributeError(msg)
 
-
-# =============================================================================
+    # =============================================================================
 
     def __folder__(self, suffix):
         """get folder path"""
 
-        folder = self.casedef.get('folder_' + suffix, None)
+        folder = self.casedef.get("folder_" + suffix, None)
 
         # /path/name/lnd/hist
         return os.path.join(folder, self.comp, suffix)
@@ -114,36 +113,37 @@ class _comp(object):
 
     def __folder_hist__(self):
         """folder of history files"""
-        return self.__folder__('hist')
+        return self.__folder__("hist")
 
     # =========================================================================
 
     def __folder_post__(self):
         """folder of postprocessed files"""
-        return self.__folder__('post')
+        return self.__folder__("post")
 
     # =========================================================================
 
     def __get_re_string__(self):
-        """ get regular expression string"""
+        """get regular expression string"""
 
-        re_str = re.compile(r'^' +                  # beginning of word
-                            self.casedef['name'] +  # name of run
-                            '.' +
-                            self._modname +         # name of module
-                            '.' +
-                            '(?P<hist>.*).'         # hist file name
-                            '(?P<year>\d{4})-'      #  year
-                            '(?P<month>\d{2})'      #  month
-                            '(.nc'                  #  end
-                            '|-'                    #  -- OR --
-                            '(?P<day>\d{2})'        #   day
-                            '(.nc'                  #   end
-                            '|-'                    #   -- OR --
-                            '(?P<second>\d{5})'     #   second
-                            '.nc))'                 #   end
-                            '(?P<zip>.*)'           # is it zipped?
-                            )
+        re_str = re.compile(
+            r"^"
+            + self.casedef["name"]  # beginning of word
+            + "."  # name of run
+            + self._modname
+            + "."  # name of module
+            + "(?P<hist>.*)."  # hist file name
+            "(?P<year>\d{4})-"  #  year
+            "(?P<month>\d{2})"  #  month
+            "(.nc"  #  end
+            "|-"  #  -- OR --
+            "(?P<day>\d{2})"  #   day
+            "(.nc"  #   end
+            "|-"  #   -- OR --
+            "(?P<second>\d{5})"  #   second
+            ".nc))"  #   end
+            "(?P<zip>.*)"  # is it zipped?
+        )
 
         return re_str
 
@@ -164,7 +164,7 @@ class _comp(object):
         filename, fullname, hist = [], [], []
         year, month, day, second = [], [], [], []
 
-        is_zipped = ''
+        is_zipped = ""
         for h in hfiles:
 
             # find files that match
@@ -174,20 +174,19 @@ class _comp(object):
 
                 filename.append(h)
                 fullname.append(os.path.join(self.folder_hist, h))
-                hist += [reg.group('hist').replace('.', '_')]
-                year += [reg.group('year')]
-                month += [reg.group('month')]
+                hist += [reg.group("hist").replace(".", "_")]
+                year += [reg.group("year")]
+                month += [reg.group("month")]
 
                 # replace None
-                day += [reg.group('day') if reg.group('day') else '1']
-                second += [reg.group('second') if reg.group('second') else '0']
-                
+                day += [reg.group("day") if reg.group("day") else "1"]
+                second += [reg.group("second") if reg.group("second") else "0"]
+
                 if not is_zipped:
-                    is_zipped = reg.group('zip')
+                    is_zipped = reg.group("zip")
 
             else:
                 pass
-
 
         filename = np.array(filename)
         fullname = np.array(fullname)
@@ -201,28 +200,35 @@ class _comp(object):
         self._hist_unique = np.unique(hist).tolist()
 
         from .hist import _hist
+
         # add history stream as attribute
         for h in self._hist_unique:
             # all files that are from this given hist stream
             sel = hist == h
             # create individual hist class
-            hist_class = _hist(h, filename[sel], fullname[sel],
-                               year[sel], month[sel], day[sel], second[sel],
-                               self.folder_post, self._case, self._modname,
-                               self.comp)
+            hist_class = _hist(
+                h,
+                filename[sel],
+                fullname[sel],
+                year[sel],
+                month[sel],
+                day[sel],
+                second[sel],
+                self.folder_post,
+                self._case,
+                self._modname,
+                self.comp,
+            )
 
             # add it as an attribute
             setattr(self, str(h), hist_class)
-
 
         if len(fullname):
             self.has_histfiles = True
 
         if is_zipped:
-            msg = '{} is probably zipped (file ending: {})'.format(
-                self.comp, is_zipped)
+            msg = "{} is probably zipped (file ending: {})".format(self.comp, is_zipped)
             warnings.warn(msg)
-
 
     def sel(self, hist, year=None, month=None, day=None, second=None, last=True):
 
@@ -231,6 +237,7 @@ class _comp(object):
 
         hist = getattr(self, hist)
         return hist.sel(year, month, day, second, last)
+
 
 # -----------------------------------------------------------------------------
 
@@ -241,7 +248,7 @@ class _lnd(_comp):
     """docstring for _lnd"""
 
     def __init__(self, case, modname):
-        super(_lnd, self).__init__(case, modname, 'lnd')
+        super(_lnd, self).__init__(case, modname, "lnd")
 
         self._data = None
 
@@ -252,6 +259,7 @@ class _lnd(_comp):
 
         return self._data
 
+
 # -----------------------------------------------------------------------------
 
 
@@ -260,7 +268,7 @@ class _atm(_comp):
     """docstring for _atm"""
 
     def __init__(self, case, modname):
-        super(_atm, self).__init__(case, modname, 'atm')
+        super(_atm, self).__init__(case, modname, "atm")
 
     @property
     def data(self):
@@ -269,23 +277,27 @@ class _atm(_comp):
 
         return self._data
 
+
 # -----------------------------------------------------------------------------
+
 
 class _ice(_comp):
 
     """docstring for _ice"""
 
     def __init__(self, case, modname):
-        super(_ice, self).__init__(case, modname, 'ice')
+        super(_ice, self).__init__(case, modname, "ice")
+
 
 # -----------------------------------------------------------------------------
+
 
 class _ocn(_comp):
 
     """docstring for _ocn"""
 
     def __init__(self, case, modname):
-        super(_ocn, self).__init__(case, modname, 'ocn')
+        super(_ocn, self).__init__(case, modname, "ocn")
 
 
 # # sorted(glob.glob(case.case['folder'] + case.case['name'] + '/*/hist/*'))
@@ -297,4 +309,3 @@ class _ocn(_comp):
 #     sorted(glob.glob(case.case['folder'] + case.case['name'] + '/ice/hist/*'))
 #     sorted(glob.glob(case.case['folder'] + case.case['name'] + '/lnd/hist/*'))
 #     sorted(glob.glob(case.case['folder'] + case.case['name'] + '/rof/hist/*'))
-
