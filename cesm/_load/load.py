@@ -1,9 +1,9 @@
 import multiprocessing as _multiprocessing
 import os as _os
 
-import numpy as _np
-import pandas as _pd
-import xarray as _xr
+import numpy as np
+import pandas as pd
+import xarray as xr
 from scipy import stats as _stats
 
 
@@ -13,7 +13,7 @@ def var(hist, varname, year, processes=1):
         hist, varname, year=year, force_save=False, check_age=False, processes=processes
     )
 
-    return _xr.read_netcdfs_cesm(source_files, "time")
+    return xr.read_netcdfs_cesm(source_files, "time")
 
 
 # -----------------------------------------------------------------------------
@@ -47,7 +47,7 @@ def evapotranspiration(hist, varname="ET", year=None, processes=1):
         new_var=new_var,
     )
 
-    return _xr.read_netcdfs_cesm(source_files, "time")
+    return xr.read_netcdfs_cesm(source_files, "time")
 
 
 # -----------------------------------------------------------------------------
@@ -69,7 +69,7 @@ def soillev(hist, varname, year, transform_func=None):
         check_age=False,
     )
 
-    return _xr.read_netcdfs_cesm(fNs, "time", transform_func=transform_func)
+    return xr.read_netcdfs_cesm(fNs, "time", transform_func=transform_func)
 
 
 # -----------------------------------------------------------------------------
@@ -91,7 +91,7 @@ def var_SREX_LAND(hist, varname, year, force_save=False, check_age=False):
         check_age=check_age,
     )
 
-    return _xr.read_netcdfs_cesm(fNs, "time")
+    return xr.read_netcdfs_cesm(fNs, "time")
 
 
 # -----------------------------------------------------------------------------
@@ -114,7 +114,7 @@ def annual_resample(hist, varname, year, apply_func="mean"):
         check_age=False,
     )
 
-    return _xr.read_netcdfs_cesm(fNs, "time")
+    return xr.read_netcdfs_cesm(fNs, "time")
 
 
 # ======================================================================
@@ -176,28 +176,28 @@ def _trans_SREX_LAND_var(varname, hist):
         ds = ds[varname]
 
         # global mean
-        ave = [ds.average(dim=("lat", "lon"), weights=weight)]
+        ave = [ds.weighted(weight).mean(("lat", "lon"))]
 
         # global land mean
-        a = ds.average(dim=("lat", "lon"), weights=wgt)
+        a = ds.weighted(wgt).mean(("lat", "lon"))
         ave.append(a)
 
         # global land mean w/o antarctica
         d = ds.sel(lat=slice(-60, 87))
-        a = d.average(dim=("lat", "lon"), weights=wgt)
+        a = d.weighted.mean(("lat", "lon"))
         ave.append(a)
 
         # srex mean
         for i in range(1, 27):
-            a = ds.where(mask == i).average(dim=("lat", "lon"), weights=wgt)
+            a = ds.where(mask == i).weighted(wgt).mean(("lat", "lon"))
 
             ave.append(a)
 
-        ds = _xr.concat(ave, dim="srex")
+        ds = xr.concat(ave, dim="srex")
 
         # shift srex coordinates such that 1 to 26 corresponds to the
         # regions
-        x = _np.arange(-2, 27)
+        x = np.arange(-2, 27)
         ds.srex.values[:] = x
 
         # add the name of the regions
@@ -224,7 +224,7 @@ def _trans_soilliq_soillev(varname, hist):
         ds = ds[varname].isel(levgrnd=slice(None, 10))
 
         # split levgrnd
-        soillev = _pd.cut(ds.levgrnd, [0, 0.1, 1, 2.9])
+        soillev = pd.cut(ds.levgrnd, [0, 0.1, 1, 2.9])
 
         # add the new category
         ds = ds.assign_coords(soillev=("levgrnd", soillev))
@@ -327,10 +327,10 @@ def _postprocess(
     prefix = _prefix(prefix, new_var)
 
     # list of years we want to process
-    years = _np.unique(hist.year[hist._get_sel(year=year)])
+    years = np.unique(hist.year[hist._get_sel(year=year)])
 
     # first and last years
-    yearmin, yearmax = _np.min(years), _np.max(years)
+    yearmin, yearmax = np.min(years), np.max(years)
 
     # created destination files
     dest_files = []
@@ -471,7 +471,7 @@ def _save_var(args):
     print(msg)
 
     # read file(s) and maybe concatenate
-    ds = _xr.read_netcdfs_cesm(source_files, "time", transform_func(varname, hist))
+    ds = xr.read_netcdfs_cesm(source_files, "time", transform_func(varname, hist))
 
     # maybe rename
     ds = ds.to_dataset(name=new_var)
@@ -532,7 +532,7 @@ def _any_file_does_not_exist(fnames):
 
     inexistent = [not _os.path.isfile(fN) for fN in fnames]
 
-    return _np.any(_np.array(inexistent))
+    return np.any(np.array(inexistent))
 
 
 def _source_files_newer_(source_files, dest_file):
@@ -547,10 +547,10 @@ def _source_files_newer_(source_files, dest_file):
     age_dest = _os.path.getctime(dest_file)
 
     # compare timestamps
-    source_is_older = _np.array(age_source) < _np.array(age_dest)
+    source_is_older = np.array(age_source) < np.array(age_dest)
 
     # return true if any is older
-    return _np.all(source_is_older)
+    return np.all(source_is_older)
 
 
 def _str2lst(list_or_string):
