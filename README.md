@@ -1,19 +1,5 @@
 # cesm - list simulation files and retrieve data
 
-## History
-
-
-### 0.1.1
-
- - Inculdes `__version__`.
- - No other changes to the code.
-
-### 0.1.0
-
-Version freeze for reproducibility.
-
-
-
 ## Usage
 
 Define one or more simulations in `~/cesm_cases.yaml`:
