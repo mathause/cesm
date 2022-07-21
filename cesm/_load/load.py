@@ -3,7 +3,6 @@ import os as _os
 
 import numpy as _np
 import pandas as _pd
-import six as _six
 import xarray as _xr
 from scipy import stats as _stats
 
@@ -559,7 +558,7 @@ def _str2lst(list_or_string):
     convert a string to a list
     """
 
-    if isinstance(list_or_string, _six.string_types):
+    if isinstance(list_or_string, str):
         list_or_string = [list_or_string]
 
     return list_or_string

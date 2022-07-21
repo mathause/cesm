@@ -1,13 +1,7 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
-# Author: Mathias Hauser
-# Date:
-
 from .case import case
 
 
-class combcase(object):
+class combcase:
     """combining two associated CESM cases
 
     Given you have two seperate CESM simulations that belong
@@ -42,7 +36,6 @@ class combcase(object):
             Default: ~/cesm_cases.yaml.
         """
 
-        super(combcase, self).__init__()
         self.metaname = metaname
         self._ens = ens
         self._suffix_hist = suffix_hist

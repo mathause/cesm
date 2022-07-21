@@ -1,11 +1,3 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
-# Author: Mathias Hauser
-# Date:
-
-from __future__ import division
-
 import os
 
 import yaml
@@ -62,7 +54,7 @@ def __is_ensemble__(case):
 # =============================================================================
 
 
-class case(object):
+class case:
 
     """A case is a cesm simulation."""
 
@@ -79,7 +71,7 @@ class case(object):
             Default: ~/cesm_cases.yaml.
         """
 
-        super(case, self).__init__()
+        super().__init__()
         self.case_name = case_name
 
         self.cesm_cases_path = cesm_cases_path
@@ -88,7 +80,7 @@ class case(object):
         # check something exists at this location
         if not os.path.isdir(self.casedef["folder_hist"]):
             folder = self.casedef["folder_hist"]
-            msg = "There is nothing at: '{}'".format(folder)
+            msg = f"There is nothing at: '{folder}'"
             raise RuntimeError(msg)
 
         # organize _comp as a property
@@ -119,8 +111,8 @@ class case(object):
 
         components = ["atm", "lnd", "ocn", "ice"]
         if comp not in components:
-            cp = "'{0}'".format("', '".join(components))
-            msg = "comp ('{}') must be any of: {}".format(comp, cp)
+            cp = "'{}'".format("', '".join(components))
+            msg = f"comp ('{comp}') must be any of: {cp}"
             raise KeyError(msg)
 
         comp = getattr(self, comp)
@@ -186,9 +178,9 @@ def __read_yaml__(path):
 
     try:
         # normal: read a file
-        with open(expanded_path, "r") as stream:
+        with open(expanded_path) as stream:
             return yaml.load(stream)
-    except IOError as exception:
+    except OSError as exception:
         # if a valid yaml string is passed
         yaml_parsed = yaml.load(path)
 
@@ -215,7 +207,7 @@ def __parse_yaml__(case_name, ens, cesm_cases_path):
 
     if casedef is None:
         print_casenames(cesm_cases_path)
-        msg = "'{}' is not known. See above.".format(case_name)
+        msg = f"'{case_name}' is not known. See above."
         raise KeyError(msg)
 
     # check if it is a ensemble

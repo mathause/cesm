@@ -1,20 +1,11 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
-# Author: Mathias Hauser
-# Date:
-
 import os
 from os import path
 
-import six
 
-
-class post_cls(object):
+class post_cls:
     """handling of file names in the 'post' folder"""
 
     def __init__(self, folder_post, casedef, hist, modname, add_hist=True):
-        super(post_cls, self).__init__()
 
         self.folder_post = folder_post
         self.casedef = casedef
@@ -35,10 +26,10 @@ class post_cls(object):
         suffix = suffix if suffix != "" else []
 
         # check if prefix/ suffix is
-        if isinstance(prefix, six.string_types):
+        if isinstance(prefix, str):
             prefix = [prefix]
 
-        if isinstance(suffix, six.string_types):
+        if isinstance(suffix, str):
             suffix = [suffix]
 
         file_base = [

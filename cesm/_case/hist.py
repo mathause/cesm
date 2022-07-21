@@ -1,9 +1,3 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
-# Author: Mathias Hauser
-# Date:
-
 import warnings
 
 import numpy as np
@@ -28,7 +22,7 @@ from .post import post_cls
 #         self.folder_post = str(folder_post)
 
 
-class _hist(object):
+class _hist:
 
     """subset history streams"""
 
@@ -46,8 +40,6 @@ class _hist(object):
         modname,
         comp,
     ):
-
-        super(_hist, self).__init__()
 
         self.hist = hist
 

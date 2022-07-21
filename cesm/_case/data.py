@@ -1,18 +1,11 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
-# Author: Mathias Hauser
-# Date:
-
 import numpy as np
 
 
-class _data(object):
+class _data:
 
     """docstring for _data"""
 
     def __init__(self, h0):
-        super(_data, self).__init__()
 
         self._h0 = h0
         self._lat_name = "lat"
@@ -59,7 +52,7 @@ class _data_lnd(_data):
     """docstring for _data_land"""
 
     def __init__(self, h0):
-        super(_data_lnd, self).__init__(h0)
+        super().__init__(h0)
 
         self._area = None
         self._landfrac = None
@@ -96,7 +89,7 @@ class _data_atm(_data):
     """docstring for _data_land"""
 
     def __init__(self, h0):
-        super(_data_atm, self).__init__(h0)
+        super().__init__(h0)
 
         self._landfrac = None
         self._hyam = None

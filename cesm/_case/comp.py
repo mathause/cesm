@@ -1,9 +1,3 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
-# Author: Mathias Hauser
-# Date:
-
 import os
 import re
 import warnings
@@ -14,13 +8,11 @@ from .data import _data_atm, _data_lnd
 from .post import post_cls
 
 
-class _comp(object):
+class _comp:
 
     """CLASS for CESM Model COMPONENTS (lnd, atm, ...)"""
 
     def __init__(self, case, modname, comp):
-
-        super(_comp, self).__init__()
 
         self._case = case
         self.casedef = case.casedef
@@ -91,11 +83,11 @@ class _comp(object):
             return getattr(self, key)
 
         if key.startswith("h"):
-            msg = "No history files found for '{}'".format(key)
+            msg = f"No history files found for '{key}'"
             raise AttributeError(msg)
         else:
             # default message
-            msg = "'_comp' object has no attribute '{}'".format(key)
+            msg = f"'_comp' object has no attribute '{key}'"
             raise AttributeError(msg)
 
     # =============================================================================
@@ -226,7 +218,7 @@ class _comp(object):
             self.has_histfiles = True
 
         if is_zipped:
-            msg = "{} is probably zipped (file ending: {})".format(self.comp, is_zipped)
+            msg = f"{self.comp} is probably zipped (file ending: {is_zipped})"
             warnings.warn(msg)
 
     def sel(self, hist, year=None, month=None, day=None, second=None, last=True):
@@ -247,7 +239,7 @@ class _lnd(_comp):
     """docstring for _lnd"""
 
     def __init__(self, case, modname):
-        super(_lnd, self).__init__(case, modname, "lnd")
+        super().__init__(case, modname, "lnd")
 
         self._data = None
 
@@ -267,7 +259,7 @@ class _atm(_comp):
     """docstring for _atm"""
 
     def __init__(self, case, modname):
-        super(_atm, self).__init__(case, modname, "atm")
+        super().__init__(case, modname, "atm")
 
     @property
     def data(self):
@@ -285,7 +277,7 @@ class _ice(_comp):
     """docstring for _ice"""
 
     def __init__(self, case, modname):
-        super(_ice, self).__init__(case, modname, "ice")
+        super().__init__(case, modname, "ice")
 
 
 # -----------------------------------------------------------------------------
@@ -296,7 +288,7 @@ class _ocn(_comp):
     """docstring for _ocn"""
 
     def __init__(self, case, modname):
-        super(_ocn, self).__init__(case, modname, "ocn")
+        super().__init__(case, modname, "ocn")
 
 
 # # sorted(glob.glob(case.case['folder'] + case.case['name'] + '/*/hist/*'))
