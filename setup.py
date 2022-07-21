@@ -2,8 +2,8 @@ from setuptools import find_packages, setup
 
 # get version
 with open("cesm/version.py") as f:
-    l = f.readline().strip().replace(" ", "").replace('"', "")
-    version = l.split("=")[1]
+    line = f.readline().strip().replace(" ", "").replace('"', "")
+    version = line.split("=")[1]
     __version__ = version
 
 setup(

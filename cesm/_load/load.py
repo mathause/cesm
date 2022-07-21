@@ -98,28 +98,6 @@ def var_SREX_LAND(hist, varname, year, force_save=False, check_age=False):
 # -----------------------------------------------------------------------------
 
 
-def _var_SREX_LAND_NOTWEIGHTED(hist, varname, year, force_save=False, check_age=False):
-
-    prefix = "SREX_NOTWEIGHTED"
-    transform_func = _trans_SREX_LAND_var_NOTWEIGHTED
-
-    fNs = _postprocess(
-        hist,
-        varname,
-        year,
-        prefix=prefix,
-        transform_func=transform_func,
-        new_var=None,
-        force_save=force_save,
-        check_age=check_age,
-    )
-
-    return _xr.read_netcdfs_cesm(fNs, "time")
-
-
-# -----------------------------------------------------------------------------
-
-
 def annual_resample(hist, varname, year, apply_func="mean"):
 
     prefix = ["annual", apply_func]
@@ -222,48 +200,6 @@ def _trans_SREX_LAND_var(varname, hist):
         # regions
         x = _np.arange(-2, 27)
         ds.srex.values[:] = x
-
-        # add the name of the regions
-        ds = ds.assign_coords(**{"srex_abbrev": ("srex", abbrevs)})
-
-        return ds
-
-    return _inner
-
-
-# -----------------------------------------------------------------------------
-
-
-def _trans_SREX_LAND_var_NOTWEIGHTED(varname, hist):
-    """
-    calculate var for each SREX region and global land mean
-
-    """
-
-    # obtain necessary data
-    import regionmask
-
-    landfrac = hist.data.landfrac
-    weight = hist.data.weight
-
-    wgt = landfrac
-    mask = regionmask.defined_regions.srex.mask(landfrac, wrap_lon=True)
-    abbrevs = ["global_land"] + regionmask.defined_regions.srex.abbrevs
-
-    # extract a named variable
-    def _inner(ds):
-        ds = ds[varname]
-
-        # global land mean
-        ave = [ds.average(dim=("lat", "lon"), weights=wgt)]
-
-        # srex mean
-        for i in range(1, 27):
-            a = ds.where(mask == i).average(dim=("lat", "lon"), weights=wgt)
-
-            ave.append(a)
-
-        ds = _xr.concat(ave, dim="srex")
 
         # add the name of the regions
         ds = ds.assign_coords(**{"srex_abbrev": ("srex", abbrevs)})
@@ -462,7 +398,7 @@ def _postprocess(
             p = pool.map_async(_save_var, all_args)
 
             try:
-                results = p.get(0xFFFF)
+                p.get(0xFFFF)
             except KeyboardInterrupt:
                 print("parent received control-c")
                 return

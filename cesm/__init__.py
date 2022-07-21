@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+# flake8: noqa
 
 # get version
 from .version import version

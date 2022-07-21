@@ -26,7 +26,7 @@ test_case:
     folder: {location}
     name: b.e122.B2000.f19_g16.test-io192.001
 
-# VALID CASE: post and hist folder 
+# VALID CASE: post and hist folder
 test_case_post:
     folder_hist: '{location}/{name}'
     folder_post: '{location}/post/{name}'

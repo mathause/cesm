@@ -6,11 +6,8 @@
 
 from __future__ import division
 
-import glob
 import os
-import weakref
 
-import numpy as np
 import yaml
 
 from .comp import _atm, _ice, _lnd, _ocn
@@ -195,11 +192,11 @@ def __read_yaml__(path):
         # if a valid yaml string is passed
         yaml_parsed = yaml.load(path)
 
-    if isinstance(yaml_parsed, dict):
-        return yaml_parsed
-    else:
-        # raise the path-not-found exception
-        raise exception
+        if isinstance(yaml_parsed, dict):
+            return yaml_parsed
+        else:
+            # raise the path-not-found exception
+            raise exception
 
 
 # -----------------------------------------------------------------------------

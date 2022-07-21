@@ -11,7 +11,6 @@ import warnings
 import numpy as np
 
 from .data import _data_atm, _data_lnd
-from .hist import _hist
 from .post import post_cls
 
 
@@ -133,16 +132,16 @@ class _comp(object):
             + self._modname
             + "."  # name of module
             + "(?P<hist>.*)."  # hist file name
-            "(?P<year>\d{4})-"  #  year
-            "(?P<month>\d{2})"  #  month
-            "(.nc"  #  end
-            "|-"  #  -- OR --
-            "(?P<day>\d{2})"  #   day
-            "(.nc"  #   end
-            "|-"  #   -- OR --
-            "(?P<second>\d{5})"  #   second
-            ".nc))"  #   end
-            "(?P<zip>.*)"  # is it zipped?
+            r"(?P<year>\d{4})-"  # year
+            r"(?P<month>\d{2})"  # month
+            r"(.nc"  # end
+            r"|-"  # -- OR --
+            r"(?P<day>\d{2})"  # day
+            r"(.nc"  # end
+            r"|-"  # -- OR --
+            r"(?P<second>\d{5})"  # second
+            r".nc))"  # end
+            r"(?P<zip>.*)"  # is it zipped?
         )
 
         return re_str

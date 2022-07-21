@@ -74,5 +74,5 @@ def _mkdir(directory):
     # create a directory
     try:
         os.makedirs(directory)
-    except OSError as e:
+    except OSError:
         pass
