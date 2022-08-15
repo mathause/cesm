@@ -263,9 +263,10 @@ def _trans_annual_resample(apply_func):
         def _inner(ds):
 
             ds = ds[varname]
-            year = _stats.mode(ds["time.year"].values)[0][0]
+            year = _stats.mode(ds["time.year"].values, keepdims=False).mode
             ds = ds.sel(time=str(year))
-            ds = ds.resample("A", "time", how=apply_func, keep_attrs=True)
+            resampler = ds.resample(time="A")
+            ds = getattr(resampler, apply_func)(keep_attrs=True)
 
             return ds
 
