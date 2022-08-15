@@ -198,8 +198,8 @@ def open_cesm(
 
     """
 
-    decode_cf = kwargs.pop("decode_cf")
-    decode_times = kwargs.pop("decode_times")
+    decode_cf = kwargs.pop("decode_cf", None)
+    decode_times = kwargs.pop("decode_times", None)
 
     # always open with decode_times = False
     ds = open_dataset(
