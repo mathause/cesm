@@ -8,7 +8,7 @@ Define one or more simulations in `~/cesm_cases.yaml`:
 SMX2000:
     folder: /net/exo/landclim/mathause/cesm_data/
     name: f.e121.FC5.f19_g16.SMM2010_2000-io384.001
-``` 
+```
 
 
 List / select files:
@@ -30,7 +30,7 @@ Output
  ...]
 
 '/net/.../f.e121.FC5.f19_g16.SMM2010_2000-io384.001.clm2.h1.0050-01-01-00000.nc'
-``` 
+```
 
 Load data:
 ```python
@@ -52,13 +52,10 @@ Coordinates:
 Data variables:
     TREFHT   (time, lat, lon) float32 242.634 243.037 242.642 242.609 ...
 
-``` 
+```
 
 
 ## Note
 
-Currently this package is interwoven with my modifications to the `xarray`.
-This has to be resolved.
-
-
+With version 0.2.0 I disentangled this package with the changes I added on top of xarray (which was a very bad idea) by adding the `xarray_utils`. It should now work with the original version of xarray (but this is currenly untested).
 

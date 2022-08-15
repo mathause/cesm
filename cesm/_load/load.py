@@ -1,6 +1,8 @@
 import multiprocessing as _multiprocessing
 import os as _os
 
+from cesm.utils import xarray_utils as xu
+
 import numpy as np
 import pandas as pd
 import xarray as xr
@@ -13,7 +15,7 @@ def var(hist, varname, year, processes=1):
         hist, varname, year=year, force_save=False, check_age=False, processes=processes
     )
 
-    return xr.read_netcdfs_cesm(source_files, "time")
+    return xu.read_netcdfs_cesm(source_files, "time")
 
 
 # -----------------------------------------------------------------------------
@@ -47,7 +49,7 @@ def evapotranspiration(hist, varname="ET", year=None, processes=1):
         new_var=new_var,
     )
 
-    return xr.read_netcdfs_cesm(source_files, "time")
+    return xu.read_netcdfs_cesm(source_files, "time")
 
 
 # -----------------------------------------------------------------------------
@@ -69,7 +71,7 @@ def soillev(hist, varname, year, transform_func=None):
         check_age=False,
     )
 
-    return xr.read_netcdfs_cesm(fNs, "time", transform_func=transform_func)
+    return xu.read_netcdfs_cesm(fNs, "time", transform_func=transform_func)
 
 
 # -----------------------------------------------------------------------------
@@ -91,7 +93,7 @@ def var_SREX_LAND(hist, varname, year, force_save=False, check_age=False):
         check_age=check_age,
     )
 
-    return xr.read_netcdfs_cesm(fNs, "time")
+    return xu.read_netcdfs_cesm(fNs, "time")
 
 
 # -----------------------------------------------------------------------------
@@ -114,7 +116,7 @@ def annual_resample(hist, varname, year, apply_func="mean"):
         check_age=False,
     )
 
-    return xr.read_netcdfs_cesm(fNs, "time")
+    return xu.read_netcdfs_cesm(fNs, "time")
 
 
 # ======================================================================
@@ -471,7 +473,7 @@ def _save_var(args):
     print(msg)
 
     # read file(s) and maybe concatenate
-    ds = xr.read_netcdfs_cesm(source_files, "time", transform_func(varname, hist))
+    ds = xu.read_netcdfs_cesm(source_files, "time", transform_func(varname, hist))
 
     # maybe rename
     ds = ds.to_dataset(name=new_var)

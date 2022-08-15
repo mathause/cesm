@@ -1,5 +1,7 @@
 import numpy as np
 
+from cesm.utils import xarray_utils as xu
+
 
 class _data:
 
@@ -39,9 +41,8 @@ class _data:
         return getattr(self, name)
 
     def __get_data__(self, varname):
-        import xarray as xr
 
-        return xr.open_cesm(self.filename)[varname]
+        return xu.open_cesm(self.filename)[varname]
 
 
 # =============================================================================
