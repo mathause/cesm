@@ -163,7 +163,7 @@ class case:
 # =============================================================================
 
 
-def __read_yaml__(path):
+def __read_yaml__(path_or_yaml_str):
     """read the cesm_case file
 
     Parameters
@@ -174,15 +174,15 @@ def __read_yaml__(path):
     """
 
     # expand '~' to '/home/$USER'
-    expanded_path = os.path.expanduser(path)
+    expanded_path = os.path.expanduser(path_or_yaml_str)
 
     try:
         # normal: read a file
         with open(expanded_path) as stream:
-            return yaml.load(stream)
+            return yaml.load(stream, yaml.SafeLoader)
     except OSError as exception:
         # if a valid yaml string is passed
-        yaml_parsed = yaml.load(path)
+        yaml_parsed = yaml.load(path_or_yaml_str, yaml.SafeLoader)
 
         if isinstance(yaml_parsed, dict):
             return yaml_parsed
