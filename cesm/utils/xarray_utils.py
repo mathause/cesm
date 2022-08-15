@@ -210,6 +210,8 @@ def open_cesm(
     )
 
     time_name = "time"
+    units = ds.coords[time_name].units
+    calendar = ds.coords[time_name].calendar
 
     if interpolate_time:
         if "time_bnds" in ds.variables or "time_bounds" in ds.variables:
@@ -223,12 +225,10 @@ def open_cesm(
 
     if decode_cf is not False and decode_times is not False:
         time = ds.coords[time_name]
-        units = time.units
-        calendar = time.calendar
+
         time = decode_cf_datetime(time, units, calendar)
 
         ds = ds.assign_coords({time_name: time})
-
 
     if round_latlon:
         lon_name, lat_name = "lon", "lat"
