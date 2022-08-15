@@ -1,12 +1,12 @@
 import multiprocessing as _multiprocessing
 import os as _os
 
-from cesm.utils import xarray_utils as xu
-
 import numpy as np
 import pandas as pd
 import xarray as xr
 from scipy import stats as _stats
+
+from cesm.utils import xarray_utils as xu
 
 
 def var(hist, varname, year, processes=1):
